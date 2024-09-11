@@ -1,0 +1,144 @@
+import datetime
+from datetime import date,datetime
+from abc import ABC,abstractmethod
+
+class Tasks:
+    
+    @abstractmethod
+    def add_prescription(self):
+        pass
+    
+    @abstractmethod
+    def dispense_medication(self):
+        pass
+    
+    @abstractmethod
+    def inventory_status(self):
+        pass
+    @abstractmethod
+    def medicine(self):
+        pass
+    
+    @abstractmethod
+    def billing(self):
+        pass
+    
+    
+class Medicine():
+    def __init__(self,medication,price,count,Batch,exp_date):
+        self.medication=medication
+        self.price=price
+        self.count=count
+        self.batch=Batch
+        if isinstance(exp_date, str):
+            self.exp_date = datetime.strptime(exp_date, "%Y-%m-%d").date()
+        else:
+            self.exp_date = exp_date
+class Pharmacy(Tasks):
+    def __init__(self):
+        self.inventory={}
+        self.today=date.today()
+        
+    
+            
+    def add_medication(self, medication, price, count,Batch,exp_date):
+        if medication in self.inventory:
+            self.inventory[medication].count += count
+            self.inventory[medication].price = price
+            self.inventory[medication].batch=Batch
+            self.inventory[medication].exp_date=exp_date
+            return f"Medication is updated. New availability: {self.inventory[medication].count}"
+        else:
+            # Add new medication to the inventory
+            self.inventory[medication] =Medicine(medication, price, count, Batch, exp_date)
+            return f"Medication is added to the inventory.Added: {self.inventory[medication]}"
+        
+    def dispense_medication(self,medication,count):
+        if medication in self.inventory:
+            if self.inventory[medication].exp_date>self.today:
+                if self.inventory[medication].count>=count:
+                    self.inventory[medication].count-=count
+                    price=count* self.inventory[medication].price
+                    return f"Medication dispensed. Price: {price}. Remaining stock: {self.inventory[medication].count}"
+                else:
+                    return "Insufficient stock to dispense the requested amount."
+            else:
+                return "Medication is expired"
+        else:
+            return "Medication is out of stock"
+        
+    def inventory_status(self):
+        inventory_list=[]
+        for med_name, med in self.inventory.items():
+            inventory_list.append(f'{med_name}: {med.count} available, price per unit: {med.price}, expiry date: {med.exp_date}')
+        return '\\n'.join(inventory_list)
+    
+    def billing(self, medication, count):
+        if medication in self.inventory:
+            med = self.inventory[medication]
+            if med.exp_date>self.today:
+                if med.count >= count:
+                    total_price = count * med.price
+                    return {
+                        "Medication_name": med.medication,
+                        "Price_per_unit": med.price,
+                        "Quantity": count,
+                        "Total_price": total_price,
+                        "Expiry_date": med.exp_date
+                        
+                    }
+                        
+                else:
+                    return "Not enough stock for billing."
+            else:
+                return f"Medication is expired"
+
+
+def drug_management():
+    pharmacy = Pharmacy()
+    
+    while True:
+        print('\nWhat would you like to do?')
+        print("1. Add Medication")
+        print("2. Dispense Medication")
+        print("3. View Inventory")
+        print("4. Billing")
+        print("5. Exit")
+    
+        action = input("Enter your choice (1-5): ")
+    
+        if action == "1":
+            medication = input("Enter medication name: ")
+            price = float(input("Enter price per unit: "))
+            count = int(input("Enter count: "))
+            Batch = input("Enter batch number: ")
+            exp_date = input("Enter expiry date (YYYY-MM-DD): ")
+            print(pharmacy.add_medication(medication, price, count, Batch, exp_date))
+        
+        elif action == "2":
+            medication = input("Enter medication name: ")
+            count = int(input("Enter count to dispense: "))
+            print(pharmacy.dispense_medication(medication, count))
+        
+        elif action == "3":
+            print(pharmacy.inventory_status())
+        
+        elif action == "4":
+            medication = input("Enter medication name: ")
+            count = int(input("Enter count for billing: "))
+            result = pharmacy.billing(medication, count)
+            if isinstance(result, dict):
+                for key, value in result.items():
+                    print(f"{key}: {value}")
+            else:
+                print(result)
+        
+        elif action == "5":
+            print("Exiting the program.")
+            break
+        
+        else:
+            print("Invalid choice. Please enter a number between 1 and 5.")
+
+# Start the program
+drug_management()
