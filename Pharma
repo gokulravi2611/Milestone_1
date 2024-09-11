@@ -2,26 +2,24 @@ import datetime
 from datetime import date,datetime
 from abc import ABC,abstractmethod
 
-class Tasks:
+class Tasks(ABC):
     
     @abstractmethod
-    def add_prescription(self):
+    def add_medication(self, medication, price, count, Batch, exp_date):
         pass
     
     @abstractmethod
-    def dispense_medication(self):
+    def dispense_medication(self, medication, count):
         pass
     
     @abstractmethod
     def inventory_status(self):
         pass
-    @abstractmethod
-    def medicine(self):
-        pass
     
     @abstractmethod
-    def billing(self):
+    def billing(self, medication, count):
         pass
+    
     
     
 class Medicine():
